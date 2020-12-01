@@ -1,0 +1,137 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+
+typedef struct XY
+{
+	int x;
+	int y;
+} XY;
+
+typedef struct Path
+{
+	XY* points;
+	int length;
+	bool alloc;
+	int key;
+} Path;
+
+typedef struct Grid
+{
+	int** map;
+	int size_x;
+	int size_y;
+	bool alloc;
+} Grid;
+
+void print_grid( Grid grid )
+{
+	for( int x = 0; x < grid.size_x; x++ )
+	{
+		for( int y = 0; y < grid.size_y; y++ )
+		{
+			printf("%i", grid.map[x][y] );
+		}
+		printf("\n");
+	}
+}
+
+void alloc_grid( Grid* grid )
+{
+	if( !grid->alloc )
+	{
+		grid->map = malloc( grid->size_x * sizeof(int*) );
+		for( int x = 0; x < grid->size_x; x++ )
+		{
+			grid->map[x] = malloc( grid->size_y* sizeof(int) );
+		}
+		grid->alloc = true;
+	}
+	else
+	{
+		int** pass = realloc( grid->map, grid->size_x * sizeof(int*) );
+		for( int x = 0; x < grid->size_x; x++ )
+		{
+			 pass = realloc(grid->map[x], grid->size_y* sizeof(int) );
+		}
+		if( pass == NULL )
+		{
+			printf( "failed to realloc\n" );
+		}
+	}
+}
+
+void free_grid( Grid* grid )
+{
+	for( int x = 0; x < grid->size_x; x++ )
+	{
+		free(grid->map[x]);
+	}
+	free(grid->map);
+	grid->alloc = false;
+}
+
+char* read_input( char* filename )
+{
+	FILE *fptr;
+
+	char ch;
+
+	fptr = fopen( filename, "r" );
+	if( fptr == NULL )
+	{
+		printf("fptr null\n");
+		return NULL;
+	}
+
+	fseek( fptr, 0, SEEK_END );
+	int len = ftell( fptr );
+	rewind( fptr );
+	char* tmp = malloc( len * sizeof( char ) );
+
+	int i = 0;
+	while( !feof( fptr ) )
+	{
+		ch = fgetc(fptr);
+		tmp[i++] = ch;
+	}
+
+	return tmp;
+}
+
+void parse_path( char* input )
+{
+	printf("parsing\n");
+	char* token = strtok( input, "," );
+	while( token )
+	{
+		char dir = 'x';
+		int dist = 0;
+		sscanf( token, "%c%i,", &dir, &dist );
+		printf( "%c%i ", dir, dist);
+		token = strtok( NULL, "," );
+	}
+}
+
+#define SIZE 100
+
+int main( int argc, char** argv )
+{
+	Grid grid;
+	grid.size_x = SIZE;
+	grid.size_y = SIZE;
+	alloc_grid( &grid );
+
+	char* input = read_input( argv[1] );
+	printf("%s", input);
+	char* token = strtok( input, "\n" );
+	while( token )
+	{
+		parse_path( token );
+		token = strtok( NULL, "\n" );
+	}
+
+	free_grid( &grid );
+}
+

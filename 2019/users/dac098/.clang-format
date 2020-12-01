@@ -1,0 +1,20 @@
+Language: Cpp
+
+IndentWidth: 4
+AccessModifierOffset: -4
+
+MaxEmptyLinesToKeep: 1
+
+AlignAfterOpenBracket: Align
+
+#AllowAllConstructorInitializersOnNextLine: true
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: Inline
+#AllowShortIfStatementsOnASingleLine: Never
+#AllowShortLambdasOnASingleLine: Empty
+
+IndentPPDirectives: AfterHash
+
+CompactNamespaces: true
+
+NamespaceIndentation: All

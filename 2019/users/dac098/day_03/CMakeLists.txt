@@ -1,0 +1,1 @@
+add_executable(day_03 "main.cpp")
