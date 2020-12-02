@@ -1,0 +1,13 @@
+{
+  "name": "dac098",
+  "version": "0.0.0",
+  "dependencies": {
+    "@types/node": "^14.14.10",
+    "typescript": "^4.1.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "license": "ISC"
+}
