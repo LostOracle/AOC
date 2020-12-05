@@ -57,7 +57,7 @@ int main(int argc, char ** argv)
   {
     //int row = get_row(seat_str);
     int row = binary_partition(seat_str.substr(0,7),0,127,'F','B');
-    int col = binary_partition(seat_str.substr(7,3),0,8,'L','R');
+    int col = binary_partition(seat_str.substr(7,3),0,7,'L','R');
     seats[row][col] = true;
   }
 
