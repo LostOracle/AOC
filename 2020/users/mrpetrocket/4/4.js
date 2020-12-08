@@ -1,6 +1,6 @@
 const assert = require('assert');
 const fs = require('fs');
-const util = require('util');
+const { getLinesFromFile } = require('../util/util');
 
 const passportValidation = require('./passport-validation');
 
@@ -33,7 +33,7 @@ function isPassportValidPart1(passport) {
 }
 
 function test() {
-    const exampleLines = require('../util/readlines')('example.txt');
+    const exampleLines = getLinesFromFile('example.txt');
     assert.deepStrictEqual(
         getPassports(exampleLines),
         JSON.parse(fs.readFileSync('./example_passports.json', { encoding: 'UTF-8' })),
@@ -44,7 +44,7 @@ function test() {
 
     passportValidation.test();
 
-    const invalidPassportLines = require('../util/readlines')('invalidpassports.txt');
+    const invalidPassportLines = getLinesFromFile('invalidpassports.txt');
     assert.deepStrictEqual(
         getPassports(invalidPassportLines)
             .filter(isPassportValidPart1)
@@ -53,7 +53,7 @@ function test() {
         0
     );
 
-    const validPassportLines = require('../util/readlines')('validpassports.txt');
+    const validPassportLines = getLinesFromFile('validpassports.txt');
     assert.deepStrictEqual(
         getPassports(validPassportLines)
             .filter(isPassportValidPart1)
@@ -64,7 +64,7 @@ function test() {
 }
 
 function main() {
-    const lines = require('../util/readlines')('4.txt');
+    const lines = getLinesFromFile('4.txt');
     const validPassportsPart1 = getPassports(lines)
         .filter(isPassportValidPart1);
     console.log(`part 1: ${validPassportsPart1.length} valid passports`);

@@ -1,4 +1,5 @@
 const assert = require('assert');
+const { getLinesFromFile } = require('../util/util');
 
 /**
  * iterate over chars, halving range for each char
@@ -52,7 +53,7 @@ function test() {
 }
 
 function main() {
-    const seatIds = require('../util/readlines')('5.txt').map(getSeatId);
+    const seatIds = getLinesFromFile('5.txt').map(getSeatId);
     const maxSeatId = max(seatIds);
     console.log(`Highest Seat ID: ${maxSeatId}`);
 

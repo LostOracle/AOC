@@ -1,4 +1,5 @@
 const assert = require('assert');
+const { getLinesFromFile } = require('../util/util');
 
 // format
 // 5-10 l: glltvgdngllzlllplrlh
@@ -37,7 +38,7 @@ function isPasswordValidPart2(passwordStruct) {
 }
 
 function main() {
-    const lines = require('../util/readlines')('2.txt');
+    const lines = getLinesFromFile('2.txt');
     const passwords = lines.map(getPasswordForLine);
     const validPasswordCountPart1 = passwords
         .filter(isPasswordValid)

@@ -24,12 +24,10 @@ function getLineGroups(lines) {
     return groups;
 }
 
-/**
- * readLines but moved here
- */
 function getLinesFromFile(filename) {
     return fs.readFileSync(filename, { encoding: 'UTF-8' })
-        .split('\r\n');
+        .split('\n')
+        .map(s => s.trim());
 }
 
 assert.deepStrictEqual(getLineGroups(['a', 'b', '', 'c', '', 'd', 'e']), [['a', 'b'], ['c'], ['d', 'e']]);

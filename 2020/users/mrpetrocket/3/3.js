@@ -1,5 +1,7 @@
+const { getLinesFromFile } = require('../util/util');
+
 function ski(xSlope, ySlope) {
-    const lines = require('../util/readlines')('3.txt');
+    const lines = getLinesFromFile('3.txt');
     const sectionWidth = lines[0].length;
     const mapHeight = lines.length;
     let x = 0;
