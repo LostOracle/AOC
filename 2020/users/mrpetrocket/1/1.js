@@ -1,4 +1,3 @@
-const fs = require('fs');
 const { getLinesFromFile } = require('../util/util');
 const numbers = getLinesFromFile('1.txt')
     .map(value => parseInt(value));
