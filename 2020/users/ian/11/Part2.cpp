@@ -9,54 +9,151 @@
 #include <functional>
 #include <cctype>
 
-std::map<long long int, long long int> solutions;
-
-void print_path(std::vector<long long int> path)
+struct Coord
 {
-  printf("Path: ");
-  for(const auto& p : path)
+  Coord(int row, int col) : row(row), col(col){}
+  int row;
+  int col;
+};
+
+void print_puzzle(std::vector<std::string> puzzle)
+{
+  printf("**********\n");
+  for(const auto& line : puzzle)
   {
-    printf("%lld, ",p);
+    printf("%s\n",line.c_str());
   }
-  printf("\n");
+  printf("**********\n\n");
 }
 
-long long int find_paths(const std::vector<long long int>& levels, long long int index, std::vector<long long int> pathSoFar)
+void print_adjacent(std::vector<Coord> adjacent)
 {
-  pathSoFar.push_back(levels[index]);
-  if( solutions.end() != solutions.find(levels[index]))
+  printf("**********\n");
+  for(const auto& item : adjacent)
   {
-    print_path(pathSoFar);
-    printf("Sub-solution: %lld\n", solutions[levels[index]]);
-    return solutions[levels[index]];
+    printf("Row: %d, Col %d\n",item.row, item.col);
   }
-  if(0 == levels[index])
-  {
-    print_path(pathSoFar);
-    return 1;
-  }
+  printf("**********\n\n");
+}
 
-  long long int paths = 0;
-  // Not a base case, need to search all possible paths from here
-  for(long long int i = index -1; i >= 0 && i >= i-3; i--)
+/*std::vector<Coord> generate_neighbors(int row, int row_max, int col, int col_max)
+{
+  std::vector<Coord> adjacent;
+  for(int r = row -1; r <= row +1; r++)
   {
-    if(levels[index] - levels[i] <=3)
+    for(int c = col -1; c <= col +1; c++)
     {
-      paths += find_paths(levels,i,pathSoFar);
+      if(r >= 0 && c >= 0 && r < row_max && c < col_max && (r != row || c != col))
+      {
+        adjacent.push_back(Coord(r,c));
+      }
     }
   }
-  solutions[levels[index]] = paths;
-  return paths;
+  print_adjacent(adjacent);
+  return adjacent;
+}*/
+
+struct SeatOption
+{
+  SeatOption(bool isValid, Coord seat) : isValid(isValid), seat(seat) {}
+  bool isValid;
+  Coord seat;
+};
+
+struct Direction
+{
+  Direction(int delta_row, int delta_col) : delta_row(delta_row), delta_col(delta_col){}
+  int delta_row;
+  int delta_col;
+};
+
+SeatOption crawl_seats(std::vector<std::string> puzzle, Direction dir, int row, int row_max, int col, int col_max)
+{
+  // Starting from row,col
+  for(int r = row + dir.delta_row, c = col + dir.delta_col; r>= 0 && r < row_max && c >= 0 && c < col_max; r += dir.delta_row, c += dir.delta_col)
+  {
+    if(puzzle[r][c] != '.')
+    {
+      return SeatOption(true, {r,c});
+    }
+  }
+  return SeatOption(false, {0,0});
 }
 
-std::vector<long long int> convert_input(const std::vector<std::string>& input)
+std::vector<Coord> generate_neighbors(std::vector<std::string> puzzle, int row, int row_max, int col, int col_max)
 {
-  std::vector<long long int> numbers;
-  for(const auto& line: input)
+  // Look in the directions
+  const std::vector<Direction> directions = { 
+    {-1, -1}, {-1, 0}, {-1, 1},
+    { 0, -1},          { 0, 1},
+    { 1, -1}, { 1, 0}, { 1, 1} };
+
+  std::vector<Coord> seats;
+
+  for(const auto d : directions)
   {
-    numbers.push_back(std::atoi(line.c_str()));
+    SeatOption so = crawl_seats(puzzle, d, row, row_max, col, col_max);
+    if(so.isValid)
+    {
+      seats.push_back(so.seat);
+    }
   }
-  return numbers;
+  return seats;
+}
+
+int count_occupied(const std::vector<std::string>& puzzle, std::vector<Coord> neighbors)
+{
+  int sum = 0;
+  for(const auto& neighbor : neighbors)
+  {
+    if(puzzle[neighbor.row][neighbor.col] == '#')
+    {
+      sum++;
+    }
+  }
+  return sum;
+}
+
+bool advance(std::vector<std::string>& puzzle)
+{
+  bool changed = false;
+  std::vector<std::string> old_puzzle(puzzle);
+  for(int row = 0; row < (int)puzzle.size(); row++)
+  {
+    for( int col = 0; col < (int)puzzle[row].size(); col++)
+    {
+      std::vector<Coord> adjacent = generate_neighbors(old_puzzle, row,puzzle.size(), col, puzzle[row].size());
+      //print_adjacent(adjacent);
+      int occupied = count_occupied(old_puzzle, adjacent);
+      if(old_puzzle[row][col] == 'L' && occupied == 0)
+      {
+        puzzle[row][col] = '#';
+        changed = true;
+      }
+      else if(old_puzzle[row][col] == '#' && occupied >= 5)
+      {
+        puzzle[row][col] = 'L';
+        changed = true;
+      }
+    }
+  }
+  return changed;
+}
+
+int count_seats(std::vector<std::string> puzzle)
+{
+  int seats = 0;
+  for(const auto& line : puzzle)
+  {
+    for(const auto& c : line)
+    {
+      if(c == '#')
+      {
+        seats++;
+      }
+    }
+  }
+  return seats;
 }
 
 int main(int argc, char ** argv)
@@ -82,17 +179,15 @@ int main(int argc, char ** argv)
     inputs.push_back(in_str);
   }
 
-  std::vector<long long int> levels = convert_input(inputs);
+  print_puzzle(inputs);
+  while(advance(inputs))
+  {
+    print_puzzle(inputs);
+  }
+  print_puzzle(inputs);
 
-  levels.push_back(0);
-  std::sort(levels.begin(),levels.end());
-  levels.push_back(levels[levels.size()-1]+3);
+  int solution = count_seats(inputs);
 
-  // establish base case for solutions tracking map
-  solutions[0] = 1;
-
-  long long int solution = find_paths(levels,levels.size()-1,{});
-
-  printf("Solution: %lld\n",solution);
+  printf("Solution: %d\n",solution);
   return 0;
 }
