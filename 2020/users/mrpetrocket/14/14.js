@@ -1,5 +1,3 @@
-// 36 bit may cause problems; I think js deals with 32 bit ints
-
 const { getLinesFromFile } = require('../util/util');
 const { deepStrictEqual } = require('assert');
 
