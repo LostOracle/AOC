@@ -1,6 +1,8 @@
 use std::fs;
 use std::env;
 
+// Counts the ones in every column of the provided lines slice
+// Returns a vector of one counts (indexed by column, 0-based)
 fn count_ones(lines: &[String]) -> Vec<u64>
 {
     let mut one_count: Vec<u64> = vec![0; lines[0].len()];
@@ -26,26 +28,38 @@ fn count_idx(lines: &[String], idx: usize, ch: char) -> u64
     });
 }
 
+// Given the sorted input data, uses the "bit criteria" to identify the
+// best match value in the input. Two flavors - "keep greater" and "keep lesser"
+// "Keep greater" checks for the most common bit in each column
+// "Keep lesser" checks for the lest common bit in each column
 fn eval_bit_criteria(sorted_lines: &[String], keep_greater: bool) -> u64
 {
     let mut curr_lines: Vec<String> = sorted_lines.to_vec();
     let char_len = sorted_lines[0].len();
+
+    // Work through the bit criteria for each bit in the input
+    // NOTE that we are narrowing our view of the data each cycle
+    // This isn't just a binary search for the closest match to the
+    // most/least common bit in each column
     for idx in 0..char_len
     {
         //for line in &curr_lines { println!("{}", line); }
 
-        // Count freq of bits and locate start/stop of range
+        // Count freq of bits in the current selection
         let ones_count = count_idx(&curr_lines, idx, '1');
 
         let desired_char = match keep_greater {
+            // Greater - '1' if count is at least half (inclusive)
             true => if ones_count*2 >= (curr_lines.len() as u64)
                 { '1' } else { '0' },
+            // Lesser - '1' if count is less than half (exclusive)
             false => if ones_count*2 < (curr_lines.len() as u64)
                 { '1' } else { '0' }
         };
 
         //println!("[{}], Ones Count ({}), Desired '{}'", idx, ones_count, desired_char);
 
+        // Locate start/stop of range we want to keep
         let start_idx = curr_lines.iter().enumerate()
             .filter(|line| line.1.chars().nth(idx).unwrap() == desired_char).next().unwrap().0;
         let stop_idx = curr_lines.iter().enumerate()
@@ -53,9 +67,9 @@ fn eval_bit_criteria(sorted_lines: &[String], keep_greater: bool) -> u64
 
         let range_len = stop_idx - start_idx + 1;
 
-        // Rotate range to first occurence of desired bit
+        // Rotate our current lines to first occurence of desired bit
         curr_lines.rotate_left(start_idx);
-        // Truncate range to index of last desired bit
+        // Truncate current lines to index of last desired bit (discarding stuff we don't want)
         curr_lines.truncate(range_len);
 
         if curr_lines.len() == 1 { break; } // Stop when we have a single item left
@@ -88,9 +102,7 @@ fn part_one(sorted_lines: &[String])
 
 fn part_two(sorted_lines: &[String])
 {
-    // Find the numbers most lexigraphically similar to the gamma / epsilon
-    // For each bit, count frequency of bits in the range
-    // Then, select the part of the range that has the most common bit # in that position
+    // Evaluate the input based on "bit criteria"
 
     let oxy_rating = eval_bit_criteria(&sorted_lines, true);
     println!("Part 2: Oxygen Rating = {}", oxy_rating);
