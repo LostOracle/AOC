@@ -14,7 +14,7 @@ struct Cave {
 
 impl fmt::Display for Cave {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}: {}/{}, {}\n", self.name, self.visits, self.max_visits,
+        write!(f, "{}: max = {}, neigh = {}", self.name, self.max_visits,
             self.neighbors.iter().fold(String::new(), |sum,x| sum + x + ","))?;
 
         Ok(())
@@ -45,7 +45,6 @@ fn add_cave(
         Entry::Occupied(o) => o.into_mut(),
         Entry::Vacant(v) => v.insert(Cave{ 
             name: cave_name.clone(),
-            visits: 0,
             max_visits: 
                 // All-caps names have no visit limt
                 if cave_name.chars().all(|x| x.is_uppercase()) { usize::MAX }
