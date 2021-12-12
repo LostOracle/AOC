@@ -8,7 +8,6 @@ use std::collections::HashSet;
 #[derive(Clone)]
 struct Cave {
     name: String,
-    visits: usize,
     max_visits: usize,
     neighbors: Vec<String>
 }
@@ -63,8 +62,8 @@ fn add_cave(
 // Next cave to visit is cave_name
 // Returns the set of unique paths
 fn visit(
-    cave_system: &mut HashMap<String, Cave>,
-    cave_name: String,
+    cave_system: &HashMap<String, Cave>,
+    cave_name: &String,
     visit_list: &mut CaveList) -> HashSet<String> {
 
     // Put this cave in the visited list
@@ -81,21 +80,16 @@ fn visit(
 
 
     // Look up the  cave so we can modify its visit count
-    let mut cave = match cave_system.entry(cave_name.clone()) {
-        Entry::Occupied(o) => o.into_mut(),
-        Entry::Vacant(_) => panic!("Bad map entry: {}", cave_name)
-    };
-    cave.visits += 1;
+    let cave = cave_system.get(cave_name).unwrap();
 
     // Visit each neighbor.
-    // Copy the neighbor list to avoid nested borrows of cave_system
-    let neigh = cave.neighbors.clone();
-    for n in neigh {
-        let other_cave = cave_system.get(&n).unwrap();
-        if other_cave.visits < other_cave.max_visits {
-            let mut cave_copy = cave_system.clone();
-            let mut visit_copy = visit_list.clone();
-            let paths = visit(&mut cave_copy, n.clone(), &mut visit_copy);
+    for n in &cave.neighbors {
+        let max_visits: usize = cave_system.get(n).unwrap().max_visits;
+        let visit_count: usize = visit_list.data.iter().filter(|x| x == &n).count();
+        let mut visit_copy = visit_list.clone();
+
+        if visit_count < max_visits {
+            let paths = visit(&cave_system, &n, &mut visit_copy);
             path_set.extend(paths);
         }
     }
@@ -129,19 +123,20 @@ fn main() {
         println!("{}", entry.1);
     }
 
-    let mut part1_caves = cave_system.clone();
-    let mut visit_list = CaveList{ data: Vec::<String>::new() };
-    let part1_paths = visit(&mut part1_caves, "start".to_string(), &mut visit_list);
+    let part1_paths = visit(
+        &cave_system,
+        &"start".to_string(),
+        &mut CaveList{ data: Vec::<String>::new() });
     //println!("Paths: {}", part1_paths.iter().fold(String::new(), |sum,x| sum + x + "\n"));
     println!("Part 1: path count = {}", part1_paths.len());
 
     // Part 2 - Allow up to 2 visits on one small cave
     // Clone the map for each small room, and modify it to allow 2 visits for that room
     let mut part2_paths  = HashSet::<String>::new();
-    for cave_name in cave_system.iter().map(|x| x.0) {
-        let mut part2_caves = cave_system.clone();
-        let mut visit_list = CaveList{ data: Vec::<String>::new() };
-        let cave: &mut Cave = part2_caves.get_mut(cave_name).unwrap();
+    let cave_names: Vec<String> = cave_system.iter().map(|x| x.0.to_string()).collect();
+    for cave_name in cave_names {
+        let mut part2_cave_system = cave_system.clone();
+        let cave: &mut Cave = part2_cave_system.get_mut(&cave_name).unwrap();
 
         if cave.max_visits == 1 && cave.name != "start" && cave.name != "end" {
             // Visit with this cave allowed up to 2
@@ -150,7 +145,10 @@ fn main() {
         else { continue; }
 
         println!("Visiting cave {} twice", cave.name);
-        part2_paths.extend(visit(&mut part2_caves, "start".to_string(), &mut visit_list));
+        part2_paths.extend(visit(
+            &part2_cave_system,
+            &"start".to_string(),
+            &mut CaveList{ data: Vec::<String>::new() }));
     }
 
     //println!("Paths: {}", part2_paths.iter().fold(String::new(), |sum,x| sum + x + "\n"));
